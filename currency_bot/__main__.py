@@ -29,6 +29,7 @@ def currency_list(message):
 @bot.message_handler(commands=['exchange'], regexp="\d+\s[A-Z]{3}\sto\s[A-Z]{3}")
 def exchange(message):
     amount, base_currency, __, target_currency = extract_arguments(message.text).split()
+    amount = float(amount)
     result = currency_service.exchange(base_currency, target_currency, amount)
     render_exchange_rate(bot, message, target_currency, result)
 

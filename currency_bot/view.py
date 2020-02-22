@@ -8,12 +8,12 @@ from jinja2 import Environment, PackageLoader
 
 
 def render_currency_list(bot, original_message, response_data):
-    response_html = render_template("currency_list.html", rates=response_data["rates"])
+    response_html = render_template("currency_list.html", rates=response_data)
     bot.send_photo(photo=imgkit.from_string(response_html, output_path=None), chat_id=original_message.chat.id)
 
 
 def render_exchange_rate(bot, original_message, target_currency, response_data):
-    bot.reply_to(original_message, "{0:d} {1:s}".format(response_data, target_currency))
+    bot.reply_to(original_message, "{0:f} {1:s}".format(response_data, target_currency))
 
 
 def render_history(bot, original_message, response_data):
