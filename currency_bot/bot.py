@@ -12,7 +12,7 @@ from currency_bot.view import render_history
 import datetime
 import logging
 
-API_TOKEN = "1071125423:AAEdrDqmDvz3H08-3qbH4sjXBY_ysaZ21P8"
+API_TOKEN = "<put you token here>"
 BASE_CURRENCY = "USD"
 HISTORY_N_DAYS = 7
 

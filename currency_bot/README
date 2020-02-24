@@ -1,7 +1,0 @@
-- You can run this app as module with -m option: python3 -m currency_bot when being inside project directory
-- You can also run unit tests with python -m unittest discover
-- You will need to install wkhtmltopdf binary (for Linux exactly), required python libraries(you will see if they missed
-while trying running script as error messages) and provide your own token in file bot.py, you can obtain it by creating
-your bot in telegram. I did tests on my own bot, but did not provide token here for security reason.
-- This bot works in polling mod, because webhook is more complex to implement and requires server in the area where telegram is not blocked(polling is not nice for prod but this is tesk task)
-However to run this app you will probably need vpn connection if telegram is blocked in your country 
