@@ -32,9 +32,9 @@ def render_exchange_rate(bot, original_message, target_currency, amount):
 
 
 def render_history(bot, original_message, rates):
-    dates = [datetime.strptime(key, "%Y-%m-%d").strftime("%b,%d") for key in rates.keys()]
-    rates = [float(round(value[list(value.keys())[0]], 2)) for value in rates.values()]
-    plot_data = {"x": dates, "y": rates}
+    x = [datetime.strptime(key, "%Y-%m-%d").strftime("%b,%d") for key in rates.keys()]
+    y = [float(round(value[list(value.keys())[0]], 2)) for value in rates.values()]
+    plot_data = {"x": x, "y": y}
     figure = sns.lineplot(data=plot_data, x="x", y="y").figure
     file = io.BytesIO()
     figure.savefig(file, format='png')

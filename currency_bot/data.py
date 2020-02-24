@@ -20,11 +20,12 @@ class CurrencyService:
 
     def exchange(self, base_currency, target_currency, amount):
         self.__load_rates_list(base_currency)
-        if base_currency not in self.object_storage:
+        if base_currency not in self.object_storage["rates"]:
             raise CurrencyNotFound(base_currency)
         if target_currency not in self.object_storage["rates"]:
             raise CurrencyNotFound(target_currency)
-        return amount * (self.object_storage["rates"][target_currency] / self.object_storage["rates"][base_currency])
+        result = amount * (self.object_storage["rates"][target_currency] / self.object_storage["rates"][base_currency])
+        return round(result, 2)
 
     def history(self, n_days, base_currency, target_currency):
         self.__load_rates_list(base_currency)
@@ -45,12 +46,13 @@ class CurrencyService:
         return rates
 
     def __load_rates_list(self, base_currency):
+        now = self.datetime.now()
         if ("rates" not in self.object_storage) or (not self.last_sync_time) or (
-                (self.datetime.now() - self.last_sync_time).seconds / 60 >= self.SYNC_TIME_MINUTES):
+                (now - self.last_sync_time).seconds / 60 >= self.SYNC_TIME_MINUTES):
             response = self.requests.get(self.RATES_URL, params={"base": base_currency})
             response.raise_for_status()
             self.object_storage["rates"] = response.json(parse_float=decimal.Decimal)["rates"]
-            self.last_sync_time = self.datetime.now()
+            self.last_sync_time = now
 
 
 # for simpliсity in memory realization provided, but can be made as persistent, for example using shelve
