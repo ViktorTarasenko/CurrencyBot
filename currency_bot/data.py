@@ -8,18 +8,19 @@ class CurrencyService:
     RATES_URL = "https://api.exchangeratesapi.io/latest"
     DATE_FORMAT = "%Y-%m-%d"
 
-    def __init__(self, datetime, requests, object_storage):
+    def __init__(self, datetime, requests, object_storage, base_currency):
         self.datetime = datetime
         self.requests = requests
         self.last_sync_time = None
         self.object_storage = object_storage
+        self.base_currency = base_currency
 
-    def rates_list(self, base_currency):
-        self.__load_rates_list(base_currency)
+    def rates_list(self):
+        self.__load_rates_list()
         return self.object_storage["rates"]
 
     def exchange(self, base_currency, target_currency, amount):
-        self.__load_rates_list(base_currency)
+        self.__load_rates_list()
         if base_currency not in self.object_storage["rates"]:
             raise CurrencyNotFound(base_currency)
         if target_currency not in self.object_storage["rates"]:
@@ -28,7 +29,7 @@ class CurrencyService:
         return round(result, 2)
 
     def history(self, n_days, base_currency, target_currency):
-        self.__load_rates_list(base_currency)
+        self.__load_rates_list()
         if base_currency not in self.object_storage["rates"]:
             raise CurrencyNotFound(base_currency)
         if target_currency not in self.object_storage["rates"]:
@@ -45,11 +46,11 @@ class CurrencyService:
             raise EmptyCurrencyHistory
         return rates
 
-    def __load_rates_list(self, base_currency):
+    def __load_rates_list(self):
         now = self.datetime.now()
         if ("rates" not in self.object_storage) or (not self.last_sync_time) or (
                 (now - self.last_sync_time).seconds / 60 >= self.SYNC_TIME_MINUTES):
-            response = self.requests.get(self.RATES_URL, params={"base": base_currency})
+            response = self.requests.get(self.RATES_URL, params={"base": self.base_currency})
             response.raise_for_status()
             self.object_storage["rates"] = response.json(parse_float=decimal.Decimal)["rates"]
             self.last_sync_time = now

@@ -18,7 +18,7 @@ HISTORY_N_DAYS = 7
 
 bot = telebot.TeleBot(API_TOKEN)
 
-currency_service = CurrencyService(datetime.datetime, requests, MemoryObjectStorage())
+currency_service = CurrencyService(datetime.datetime, requests, MemoryObjectStorage(), BASE_CURRENCY)
 
 
 def handle_common_error(e, message, bot):
@@ -29,12 +29,12 @@ def handle_common_error(e, message, bot):
 @bot.message_handler(commands=['list', 'lst'])
 def currency_list(message):
     try:
-        render_currency_list(bot, message, currency_service.rates_list(BASE_CURRENCY))
+        render_currency_list(bot, message, currency_service.rates_list())
     except Exception as e:
         handle_common_error(e, message, bot)
 
 
-@bot.message_handler(commands=['exchange'], regexp="\d+\$\sto\s[A-Z]{3}|\d+\s[A-Z]{3}\sto\s[A-Z]{3}")
+@bot.message_handler(commands=['exchange'], regexp="\d+([.]\d{1,2})?\$\sto\s[A-Z]{3}|\d+([.]\d{1,2})?\s[A-Z]{3}\sto\s[A-Z]{3}")
 def exchange(message):
     try:
         args = extract_arguments(message.text)

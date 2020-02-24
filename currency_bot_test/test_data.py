@@ -1,3 +1,4 @@
+import unittest
 from decimal import Decimal
 from unittest import TestCase
 from unittest.mock import Mock, MagicMock
@@ -47,7 +48,7 @@ class TestCurrencyService(TestCase):
         object_storage_mock = MagicMock()
         object_storage_mock.__getitem__.side_effect = [rates, rates, rates, rates, rates_later, rates_later]
         object_storage_mock.__contains__.side_effect = [False, True, True]
-        currency_service = CurrencyService(datetime_mock, requests_mock, object_storage_mock)
+        currency_service = CurrencyService(datetime_mock, requests_mock, object_storage_mock, "USD")
         result = currency_service.history(8, 'USD', 'CAD')
         object_storage_mock.__setitem__.assert_called_with("rates", rates)
         requests_mock.get.assert_any_call(CurrencyService.HISTORY_URL, params={"start_at": "2020-02-17",
@@ -104,7 +105,7 @@ class TestCurrencyService(TestCase):
         datetime_mock.now.side_effect = [datetime(2020, 2, 24, 0, 0, 0, 0), datetime(2020, 2, 24, 0, 0, 0, 0)]
         object_storage_mock = MagicMock()
         object_storage_mock.__getitem__.side_effect = [rates, rates, rates, rates]
-        currency_service = CurrencyService(datetime_mock, requests_mock, object_storage_mock)
+        currency_service = CurrencyService(datetime_mock, requests_mock, object_storage_mock, "USD")
         with(self.assertRaises(CurrencyNotFound)):
             currency_service.history(8, 'USF', 'CAD')
         with(self.assertRaises(CurrencyNotFound)):
@@ -152,7 +153,7 @@ class TestCurrencyService(TestCase):
         object_storage_mock.__getitem__.side_effect = [rates, rates, rates, rates, rates, rates, rates, rates,
                                                        rates_later, rates_later, rates_later, rates_later]
         object_storage_mock.__contains__.side_effect = [False, True, True]
-        currency_service = CurrencyService(datetime_mock, requests_mock, object_storage_mock)
+        currency_service = CurrencyService(datetime_mock, requests_mock, object_storage_mock, "USD")
         result = currency_service.exchange("USD", "CAD", Decimal(10.25))
         object_storage_mock.__setitem__.assert_called_with("rates", rates)
 
@@ -201,7 +202,7 @@ class TestCurrencyService(TestCase):
         datetime_mock.now.side_effect = [datetime(2020, 2, 24, 0, 0, 0, 0), datetime(2020, 2, 24, 0, 0, 0, 0)]
         object_storage_mock = MagicMock()
         object_storage_mock.__getitem__.side_effect = [rates, rates, rates, rates, rates, rates, rates, rates]
-        currency_service = CurrencyService(datetime_mock, requests_mock, object_storage_mock)
+        currency_service = CurrencyService(datetime_mock, requests_mock, object_storage_mock, "USD")
         with(self.assertRaises(CurrencyNotFound)):
             currency_service.exchange("USF", "CAD", Decimal(10.25))
         with(self.assertRaises(CurrencyNotFound)):
@@ -244,8 +245,8 @@ class TestCurrencyService(TestCase):
         object_storage_mock = MagicMock()
         object_storage_mock.__getitem__.side_effect = [rates, rates, rates_later]
         object_storage_mock.__contains__.side_effect = [False, True, True]
-        currency_service = CurrencyService(datetime_mock, requests_mock, object_storage_mock)
-        result = currency_service.rates_list("USD")
+        currency_service = CurrencyService(datetime_mock, requests_mock, object_storage_mock, "USD")
+        result = currency_service.rates_list()
         object_storage_mock.__setitem__.assert_called_with("rates", rates)
         requests_mock.get.assert_any_call(CurrencyService.RATES_URL, params={"base": "USD"})
         assert result == rates
@@ -254,7 +255,7 @@ class TestCurrencyService(TestCase):
         # shifting time less than ten minutes, see side_effect above
         object_storage_mock.reset_mock()
         requests_mock.reset_mock()
-        result = currency_service.rates_list("USD")
+        result = currency_service.rates_list()
         object_storage_mock.__setitem__.assert_not_called()
         requests_mock.get.assert_not_called()
         assert result == rates
@@ -263,8 +264,12 @@ class TestCurrencyService(TestCase):
         # shifting time more than ten minutes, see side_effect above
         object_storage_mock.reset_mock()
         requests_mock.reset_mock()
-        result = currency_service.rates_list("USD")
+        result = currency_service.rates_list()
         object_storage_mock.__setitem__.assert_called_with("rates", rates_later)
         requests_mock.get.assert_any_call(CurrencyService.RATES_URL, params={"base": "USD"})
         assert result == rates_later
         assert currency_service.last_sync_time == datetime(2020, 2, 24, 0, 10, 0, 0)
+
+
+if __name__ == '__main__':
+    unittest.main()
