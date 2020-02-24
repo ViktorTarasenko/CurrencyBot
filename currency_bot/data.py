@@ -43,7 +43,7 @@ class CurrencyService:
         response.raise_for_status()
         rates = response.json(parse_float=decimal.Decimal)["rates"]
         if not rates:
-            raise EmptyCurrencyHistory
+            raise NoDataAvailable
         return rates
 
     def __load_rates_list(self):
@@ -76,5 +76,5 @@ class CurrencyNotFound(Exception):
         self.currency = currency
 
 
-class EmptyCurrencyHistory(Exception):
+class NoDataAvailable(Exception):
     pass

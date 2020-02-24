@@ -4,7 +4,7 @@ from unittest import TestCase
 from unittest.mock import Mock, MagicMock
 from datetime import datetime
 
-from currency_bot.data import CurrencyService, CurrencyNotFound
+from currency_bot.data import CurrencyService, CurrencyNotFound, NoDataAvailable
 
 
 class TestCurrencyService(TestCase):
@@ -79,7 +79,7 @@ class TestCurrencyService(TestCase):
         assert result == history
         assert currency_service.last_sync_time == datetime(2020, 2, 24, 0, 10, 0, 0)
 
-    def test_history_currency_not_found_first_currency(self):
+    def test_history_currency_not_found(self):
         history = {"2019-11-27": {"CAD": 1.3266418385}, "2019-11-28": {"CAD": 1.3289413903},
                    "2019-12-03": {"CAD": 1.3320386596}, "2019-12-02": {"CAD": 1.3295835979},
                    "2019-11-29": {"CAD": 1.3307230013}}
@@ -110,6 +110,34 @@ class TestCurrencyService(TestCase):
             currency_service.history(8, 'USF', 'CAD')
         with(self.assertRaises(CurrencyNotFound)):
             currency_service.history(8, 'CAD', 'USF')
+
+    def test_history_no_data(self):
+        history = {}
+        rates = {"CAD": 1.3258031664, "HKD": 7.7878900102, "ISK": 128.0436996574, "PHP": 50.87954819,
+                 "DKK": 6.9162114619, "HUF": 312.1007314138, "CZK": 23.2024812517, "GBP": 0.773169151,
+                 "RON": 4.4477363207, "SEK": 9.7852050736, "IDR": 13765.0032404407, "INR": 71.9877789094,
+                 "BRL": 4.4023701509, "RUB": 64.3903342283, "HRK": 6.8965836497, "JPY": 111.9896305898,
+                 "THB": 31.6304045922, "CHF": 0.9823164522, "EUR": 0.9258402, "MYR": 4.1935006018,
+                 "BGN": 1.8107582631,
+                 "TRY": 6.1226738265, "CNY": 7.0312933988, "NOK": 9.3392278493, "NZD": 1.583557078,
+                 "ZAR": 15.087954819,
+                 "USD": 1.0, "MXN": 18.9966669753, "SGD": 1.4008888066, "AUD": 1.5149523192,
+                 "ILS": 3.4242199796,
+                 "KRW": 1212.3414498658, "PLN": 3.9658364966}
+        datetime_mock = Mock()
+        requests_mock = Mock()
+        get_mock = Mock()
+        json_mock = MagicMock()
+        json_mock.__getitem__.side_effect = [rates, history, rates, history]
+
+        requests_mock.get.return_value = get_mock
+        get_mock.json.return_value = json_mock
+        datetime_mock.now.side_effect = [datetime(2020, 2, 24, 0, 0, 0, 0), datetime(2020, 2, 24, 0, 0, 0, 0)]
+        object_storage_mock = MagicMock()
+        object_storage_mock.__getitem__.side_effect = [rates, rates, rates, rates]
+        currency_service = CurrencyService(datetime_mock, requests_mock, object_storage_mock, "USD")
+        with(self.assertRaises(NoDataAvailable)):
+            currency_service.history(8, 'USD', 'CAD')
 
     def test_exchange_ok(self):
         rates = {"CAD": 1.3258031664, "HKD": 7.7878900102, "ISK": 128.0436996574, "PHP": 50.87954819,
